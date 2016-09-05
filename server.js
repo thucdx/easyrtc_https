@@ -1,6 +1,8 @@
 //Modules
 var express = require('express');
+var https = require('https');
 var app = express();
+var fs = require("fs");
 var io      = require("socket.io");         // web socket external module
 var easyrtc = require("easyrtc");           // EasyRTC external module
 
@@ -67,8 +69,7 @@ app.post('/login', function (req, res) {
             res.send("logged in");
             console.log("Logged in");
 
-            // Start EasyRTC server
-            var easyrtcServer = easyrtc.listen(app, socketServer, {'apiEnable':'true'});
+           
 
         }
         else { res.send("Incorrect password.") }
@@ -121,8 +122,18 @@ app.get('/video', function(req, res){
 });
 
 //var webServer = app.listen(process.env.port || 8080); //original WebMatrix port
-var webServer = app.listen(8080);
-console.log('Listening on port ' + 80);
+// var webServer = app.listen(8080);
+var webServer = https.createServer(
+{
+    key:  fs.readFileSync("cert/webrtc.demo.nal.vn.key"),
+    cert: fs.readFileSync("cert/webrtc.demo.nal.vn.cert")
+},
+app).listen(8443);
+
+console.log('Listening on port ' + 8443);
 
 // Start Socket.io so it attaches itself to Express server
 var socketServer = io.listen(webServer);
+
+ // Start EasyRTC server
+var easyrtcServer = easyrtc.listen(app, socketServer, {'apiEnable':'true'});
